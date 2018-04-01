@@ -1,0 +1,13 @@
+image: haskell:7.10
+
+pipelines:
+  default:
+    - step:
+        script:
+          - stack build
+  branches: # Container for all branch-specific pipelines.
+    master:
+      - step:
+          script:
+            - stack setup
+            - stack build

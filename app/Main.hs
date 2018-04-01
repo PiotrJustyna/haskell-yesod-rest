@@ -7,14 +7,9 @@
 module Main where
 
 import Lib
+import Models
 
-import Data.Text (Text)
 import Yesod
-
-data Feedback = Feedback
-  { experience :: Text
-  , comment :: Text
-  }
 
 instance ToJSON Feedback where
   toJSON Feedback {..} =
@@ -26,13 +21,17 @@ data App =
 mkYesod
   "App"
   [parseRoutes|
-/ HomeR GET
+/           HomeR       GET
+/feedback   FeedbackR   GET
 |]
 
 instance Yesod App
 
-getHomeR :: Handler Value
-getHomeR = returnJson $ Feedback "poor" "it wasn't great"
+getFeedbackR :: Handler Value
+getFeedbackR = returnJson $ Feedback "poor" "it wasn't great"
+
+getHomeR :: Handler String
+getHomeR = return "Welcome to Feedback on Anything."
 
 main :: IO ()
 main = warp 3000 App

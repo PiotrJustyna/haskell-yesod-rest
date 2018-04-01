@@ -23,7 +23,11 @@ dependencies:
 - base >= 4.7 && < 5
 
 library:
-  source-dirs: src
+  source-dirs:
+    - src
+    - src/models
+  dependencies:
+    - text
 
 executables:
   foa-exe:
@@ -36,7 +40,6 @@ executables:
     dependencies:
     - foa
     - yesod
-    - text
 
 tests:
   foa-test:
