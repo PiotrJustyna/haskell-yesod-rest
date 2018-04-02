@@ -9,11 +9,8 @@ module Main where
 import Lib
 import Models
 
+import qualified Data.Text as T
 import Yesod
-
-instance ToJSON Feedback where
-  toJSON Feedback {..} =
-    object ["experience" .= experience, "comment" .= comment]
 
 data App =
   App
@@ -21,14 +18,22 @@ data App =
 mkYesod
   "App"
   [parseRoutes|
-/           HomeR       GET
-/feedback   FeedbackR   GET
+/                       HomeR           GET
+/feedback               FeedbackR       GET
+/feedback/#T.Text       FeedbackByIdR   GET
 |]
 
 instance Yesod App
 
 getFeedbackR :: Handler Value
-getFeedbackR = returnJson $ Feedback "poor" "it wasn't great"
+getFeedbackR =
+  returnJson
+    [ Feedback "1" "poor" "it wasn't great"
+    , Feedback "2" "pretty bad" "nope."
+    ]
+
+getFeedbackByIdR :: T.Text -> Handler Value
+getFeedbackByIdR x = returnJson $ Feedback x "ok" "passable"
 
 getHomeR :: Handler String
 getHomeR = return "Welcome to Feedback on Anything."

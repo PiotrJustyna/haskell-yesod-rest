@@ -1,10 +1,19 @@
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module Models
   ( Feedback(..)
   ) where
 
-import Data.Text (Text)
+import qualified Data.Text as T
+import Yesod
 
 data Feedback = Feedback
-  { experience :: Text
-  , comment :: Text
+  { id :: T.Text
+  , experience :: T.Text
+  , comment :: T.Text
   }
+
+instance ToJSON Feedback where
+  toJSON Feedback {..} =
+    object ["id" .= id, "experience" .= experience, "comment" .= comment]

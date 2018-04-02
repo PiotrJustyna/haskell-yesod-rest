@@ -28,6 +28,7 @@ library:
     - src/models
   dependencies:
     - text
+    - yesod
 
 executables:
   foa-exe:
@@ -39,7 +40,9 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - foa
+    - text
     - yesod
+    default-extensions: ViewPatterns
 
 tests:
   foa-test:
