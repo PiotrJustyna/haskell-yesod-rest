@@ -4,10 +4,12 @@ pipelines:
   default:
     - step:
         script:
+          - stack upgrade
           - stack build
   branches: # Container for all branch-specific pipelines.
     master:
       - step:
           script:
+            - stack upgrade
             - stack setup
             - stack build
