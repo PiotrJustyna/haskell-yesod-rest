@@ -39,6 +39,8 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - aeson
+    - bytestring
     - foa
     - text
     - yesod
