@@ -11,7 +11,7 @@ import Models
 
 import qualified  Data.ByteString.Lazy as BS
 import qualified  Data.Text as T
-import Data.Aeson (encode)
+import Data.Aeson (encode, decode)
 import Yesod
 
 data App =
@@ -31,7 +31,13 @@ getFeedbackR :: Handler Value
 getFeedbackR = returnJson [Feedback "1" "poor" "it wasn't great", Feedback "2" "pretty bad" "nope."]
 
 getFeedbackByIdR :: T.Text -> Handler Value
-getFeedbackByIdR x = returnJson $ Feedback x "ok" "passable"
+-- getFeedbackByIdR x = returnJson $ Feedback x "ok" "passable"
+getFeedbackByIdR x = do
+  content <- liftIO $ BS.readFile path
+  returnJson $ ((decode content) :: Maybe Feedback)
+    where
+    path = "feedback/" ++ (T.unpack x) ++ ".json"
+    --   -- getFeedbackByIdR x = returnJson $ Feedback x "ok" "passable"
 
 putFeedbackByIdR :: T.Text -> Handler Value
 putFeedbackByIdR x = do

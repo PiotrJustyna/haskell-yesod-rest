@@ -27,6 +27,7 @@ library:
     - src
     - src/models
   dependencies:
+    - aeson
     - text
     - yesod
 
