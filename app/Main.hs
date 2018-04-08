@@ -9,9 +9,11 @@ module Main where
 import Lib
 import Models
 
-import qualified  Data.ByteString.Lazy as BS
-import qualified  Data.Text as T
-import Data.Aeson (encode, decode)
+import Control.Monad
+import Data.Aeson (decode, encode)
+import qualified Data.ByteString.Lazy as BS
+import qualified Data.Text as T
+import System.Directory
 import Yesod
 
 data App =
@@ -28,16 +30,27 @@ mkYesod
 instance Yesod App
 
 getFeedbackR :: Handler Value
-getFeedbackR = returnJson [Feedback "1" "poor" "it wasn't great", Feedback "2" "pretty bad" "nope."]
+getFeedbackR = do
+  paths <- liftIO $ getDirectoryContents "feedback"
+  feedback <-
+    liftIO $
+    foldM
+      (\files path ->
+         fmap
+           (\file -> (decodedFile file) : files)
+           (BS.readFile $ "feedback/" ++ path))
+      []
+      (filter (\x -> length x > 2) paths)
+  returnJson feedback
+  where
+    decodedFile file = (decode file) :: Maybe Feedback
 
 getFeedbackByIdR :: T.Text -> Handler Value
--- getFeedbackByIdR x = returnJson $ Feedback x "ok" "passable"
 getFeedbackByIdR x = do
   content <- liftIO $ BS.readFile path
   returnJson $ ((decode content) :: Maybe Feedback)
-    where
+  where
     path = "feedback/" ++ (T.unpack x) ++ ".json"
-    --   -- getFeedbackByIdR x = returnJson $ Feedback x "ok" "passable"
 
 putFeedbackByIdR :: T.Text -> Handler Value
 putFeedbackByIdR x = do
