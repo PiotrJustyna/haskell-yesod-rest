@@ -23,8 +23,8 @@ mkYesod
   "App"
   [parseRoutes|
 /                       HomeR           GET
-/feedback               FeedbackR       GET
-/feedback/#T.Text       FeedbackByIdR   GET PUT
+/feedback               FeedbackR       GET POST
+/feedback/#T.Text       FeedbackByIdR   GET
 |]
 
 instance Yesod App
@@ -52,13 +52,18 @@ getFeedbackByIdR x = do
   where
     path = "feedback/" ++ (T.unpack x) ++ ".json"
 
-putFeedbackByIdR :: T.Text -> Handler Value
-putFeedbackByIdR x = do
-  liftIO $ BS.writeFile path (encode newFeedback)
-  returnJson newFeedback
-  where
-    path = "feedback/" ++ (T.unpack x) ++ ".json"
-    newFeedback = Feedback x "excellent" "result of HTTP PUT"
+postFeedbackR :: Handler Value
+postFeedbackR = do
+  feedback <- requireJsonBody :: Handler NewFeedbackRequest
+  returnJson $ feedback
+
+-- postFeedbackByIdR :: T.Text -> Handler Value
+-- postFeedbackByIdR x = do
+--   liftIO $ BS.writeFile path (encode newFeedback)
+--   returnJson newFeedback
+--   where
+--     path = "feedback/" ++ (T.unpack x) ++ ".json"
+--     newFeedback = Feedback x "excellent" "result of HTTP POST"
 
 getHomeR :: Handler String
 getHomeR = return "Welcome to Feedback on Anything."
