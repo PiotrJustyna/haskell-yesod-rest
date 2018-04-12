@@ -3,16 +3,19 @@
 
 module Models
   ( Feedback(..)
+  , newFeedback
   , NewFeedbackRequest(..)
   ) where
 
 import Data.Aeson.Types
 import qualified Data.Text as T
+import Data.UUID
+import Data.UUID.V4
 import Yesod
 
 -------------------------
 data Feedback = Feedback
-  { id :: T.Text
+  { id :: UUID
   , experience :: T.Text
   , comment :: T.Text
   }
@@ -25,6 +28,11 @@ instance FromJSON Feedback where
   parseJSON =
     withObject "Feedback" $ \v ->
       Feedback <$> v .: "id" <*> v .: "experience" <*> v .: "comment"
+
+newFeedback :: NewFeedbackRequest -> IO Feedback
+newFeedback (NewFeedbackRequest newExperience newComment) = do
+  newFeedbackID <- nextRandom
+  return $ Feedback newFeedbackID newExperience newComment
 
 -------------------------
 data NewFeedbackRequest = NewFeedbackRequest

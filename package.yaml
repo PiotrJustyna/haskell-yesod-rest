@@ -29,6 +29,7 @@ library:
   dependencies:
     - aeson
     - text
+    - uuid
     - yesod
 
 executables:
@@ -45,6 +46,7 @@ executables:
     - directory
     - foa
     - text
+    - uuid
     - yesod
     default-extensions: ViewPatterns
 

@@ -13,6 +13,7 @@ import Control.Monad
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString.Lazy as BS
 import qualified Data.Text as T
+import Data.UUID
 import System.Directory
 import Yesod
 
@@ -54,16 +55,13 @@ getFeedbackByIdR x = do
 
 postFeedbackR :: Handler Value
 postFeedbackR = do
-  feedback <- requireJsonBody :: Handler NewFeedbackRequest
-  returnJson $ feedback
-
--- postFeedbackByIdR :: T.Text -> Handler Value
--- postFeedbackByIdR x = do
---   liftIO $ BS.writeFile path (encode newFeedback)
---   returnJson newFeedback
---   where
---     path = "feedback/" ++ (T.unpack x) ++ ".json"
---     newFeedback = Feedback x "excellent" "result of HTTP POST"
+  newFeedbackRequest <- requireJsonBody :: Handler NewFeedbackRequest
+  feedback <- liftIO $ newFeedback newFeedbackRequest
+  liftIO $ BS.writeFile (path feedback) (encode feedback)
+  returnJson feedback
+  where
+    path (Feedback id experience comment) =
+      "feedback/" ++ (toString id) ++ ".json"
 
 getHomeR :: Handler String
 getHomeR = return "Welcome to Feedback on Anything."
