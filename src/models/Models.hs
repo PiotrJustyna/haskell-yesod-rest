@@ -13,7 +13,6 @@ import Data.UUID
 import Data.UUID.V4
 import Yesod
 
--------------------------
 data Feedback = Feedback
   { id :: UUID
   , experience :: T.Text
@@ -34,7 +33,6 @@ newFeedback (NewFeedbackRequest newExperience newComment) = do
   newFeedbackID <- nextRandom
   return $ Feedback newFeedbackID newExperience newComment
 
--------------------------
 data NewFeedbackRequest = NewFeedbackRequest
   { newExperience :: T.Text
   , newComment :: T.Text
@@ -48,4 +46,3 @@ instance FromJSON NewFeedbackRequest where
   parseJSON =
     withObject "NewFeedbackRequest" $ \v ->
       NewFeedbackRequest <$> v .: "newExperience" <*> v .: "newComment"
--------------------------
