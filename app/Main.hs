@@ -21,9 +21,9 @@ data App =
 mkYesod
   "App"
   [parseRoutes|
-/                       HomeR           GET
-/feedback               FeedbackR       GET POST
-/feedback/#T.Text       FeedbackByIdR   GET DELETE
+/                 HomeR           GET
+/feedback         FeedbackR       GET POST
+/feedback/#T.Text FeedbackByIdR   GET PUT DELETE
 |]
 
 instance Yesod App
@@ -58,6 +58,17 @@ getFeedbackByIdR :: T.Text -> Handler Value
 getFeedbackByIdR x = do
   content <- liftIO $ BS.readFile path
   returnJson $ ((decode content) :: Maybe Feedback)
+  where
+    path = "feedback/" ++ (T.unpack x) ++ ".json"
+
+putFeedbackByIdR :: T.Text -> Handler String
+putFeedbackByIdR x = do
+  updateFeedbackRequest <- requireJsonBody :: Handler UpdateFeedbackRequest
+  case (updatedFeedback x updateFeedbackRequest) of
+    Just feedback -> do
+      liftIO $ BS.writeFile path (encode feedback)
+      return "Feedback saved."
+    Nothing -> return "Requested update is invalid."
   where
     path = "feedback/" ++ (T.unpack x) ++ ".json"
 
