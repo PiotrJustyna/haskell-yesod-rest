@@ -14,6 +14,7 @@ import Data.UUID
 import Models
 import System.Directory
 import Yesod
+import Network.HTTP.Types
 
 data App =
   App
@@ -40,7 +41,7 @@ getFeedbackR = do
            (BS.readFile $ "feedback/" ++ path))
       []
       (filter (\x -> length x > 2) paths)
-  returnJson feedback
+  sendStatusJSON ok200 feedback
   where
     decodedFile file = (decode file) :: Maybe Feedback
 
@@ -49,7 +50,7 @@ postFeedbackR = do
   newFeedbackRequest <- requireJsonBody :: Handler NewFeedbackRequest
   feedback <- liftIO $ newFeedback newFeedbackRequest
   liftIO $ BS.writeFile (path feedback) (encode feedback)
-  returnJson feedback
+  sendStatusJSON ok200 feedback
   where
     path (Feedback id experience comment) =
       "feedback/" ++ (toString id) ++ ".json"
@@ -57,7 +58,7 @@ postFeedbackR = do
 getFeedbackByIdR :: T.Text -> Handler Value
 getFeedbackByIdR x = do
   content <- liftIO $ BS.readFile path
-  returnJson $ ((decode content) :: Maybe Feedback)
+  sendStatusJSON ok200 $ ((decode content) :: Maybe Feedback)
   where
     path = "feedback/" ++ (T.unpack x) ++ ".json"
 
@@ -67,20 +68,20 @@ putFeedbackByIdR x = do
   case (updatedFeedback x updateFeedbackRequest) of
     Just feedback -> do
       liftIO $ BS.writeFile path (encode feedback)
-      return "Feedback saved."
-    Nothing -> return "Requested update is invalid."
+      sendStatusJSON ok200 ("Feedback saved." :: String)
+    Nothing -> sendStatusJSON badRequest400 ("Requested update is invalid." :: String)
   where
     path = "feedback/" ++ (T.unpack x) ++ ".json"
 
 deleteFeedbackByIdR :: T.Text -> Handler String
 deleteFeedbackByIdR x = do
   liftIO $ removeFile path
-  return "Feedback deleted."
+  sendStatusJSON ok200 ("Feedback deleted." :: String)
   where
     path = "feedback/" ++ (T.unpack x) ++ ".json"
 
 getHomeR :: Handler String
-getHomeR = return "Welcome to Feedback on Anything."
+getHomeR = sendStatusJSON ok200 ("Welcome to Feedback on Anything." :: String)
 
 main :: IO ()
 main = warp 3000 App
