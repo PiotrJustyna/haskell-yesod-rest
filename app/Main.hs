@@ -12,9 +12,9 @@ import qualified Data.ByteString.Lazy as BS
 import qualified Data.Text as T
 import Data.UUID
 import Models
+import Network.HTTP.Types
 import System.Directory
 import Yesod
-import Network.HTTP.Types
 
 data App =
   App
@@ -47,13 +47,12 @@ getFeedbackR = do
 
 postFeedbackR :: Handler Value
 postFeedbackR = do
-  newFeedbackRequest <- requireJsonBody :: Handler NewFeedbackRequest
+  newFeedbackRequest <- requireJsonBody :: Handler DirtyFeedback
   feedback <- liftIO $ newFeedback newFeedbackRequest
   liftIO $ BS.writeFile (path feedback) (encode feedback)
   sendStatusJSON ok200 feedback
   where
-    path (Feedback id experience comment) =
-      "feedback/" ++ (toString id) ++ ".json"
+    path (Feedback id _) = "feedback/" ++ (toString id) ++ ".json"
 
 getFeedbackByIdR :: T.Text -> Handler Value
 getFeedbackByIdR x = do
@@ -64,12 +63,13 @@ getFeedbackByIdR x = do
 
 putFeedbackByIdR :: T.Text -> Handler String
 putFeedbackByIdR x = do
-  updateFeedbackRequest <- requireJsonBody :: Handler UpdateFeedbackRequest
+  updateFeedbackRequest <- requireJsonBody :: Handler DirtyFeedback
   case (updatedFeedback x updateFeedbackRequest) of
     Just feedback -> do
       liftIO $ BS.writeFile path (encode feedback)
       sendStatusJSON ok200 ("Feedback saved." :: String)
-    Nothing -> sendStatusJSON badRequest400 ("Requested update is invalid." :: String)
+    Nothing ->
+      sendStatusJSON badRequest400 ("Requested update is invalid." :: String)
   where
     path = "feedback/" ++ (T.unpack x) ++ ".json"
 

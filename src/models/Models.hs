@@ -3,8 +3,7 @@
 
 module Models
   ( Feedback(..)
-  , NewFeedbackRequest(..)
-  , UpdateFeedbackRequest(..)
+  , DirtyFeedback(..)
   , newFeedback
   , updatedFeedback
   ) where
@@ -18,54 +17,41 @@ import Yesod
 --------------------------------------------------
 data Feedback = Feedback
   { id :: UUID
-  , experience :: T.Text
-  , comment :: T.Text
+  , dirtyFeedback :: DirtyFeedback
   }
 
 instance ToJSON Feedback where
-  toJSON Feedback {..} =
-    object ["id" .= id, "experience" .= experience, "comment" .= comment]
+  toJSON Feedback {..} = object ["id" .= id, "dirtyFeedback" .= dirtyFeedback]
 
 instance FromJSON Feedback where
   parseJSON =
     withObject "Feedback" $ \v ->
-      Feedback <$> v .: "id" <*> v .: "experience" <*> v .: "comment"
+      Feedback <$> v .: "id" <*> v .: "dirtyFeedback"
 
 --------------------------------------------------
-data NewFeedbackRequest = NewFeedbackRequest
-  { newExperience :: T.Text
-  , newComment :: T.Text
+data DirtyFeedback = DirtyFeedback
+  { experience :: T.Text
+  , comment :: T.Text
   }
 
-instance ToJSON NewFeedbackRequest where
-  toJSON NewFeedbackRequest {..} =
-    object ["newExperience" .= newExperience, "newComment" .= newComment]
+instance ToJSON DirtyFeedback where
+  toJSON DirtyFeedback {..} =
+    object ["experience" .= experience, "comment" .= comment]
 
-instance FromJSON NewFeedbackRequest where
+instance FromJSON DirtyFeedback where
   parseJSON =
-    withObject "NewFeedbackRequest" $ \v ->
-      NewFeedbackRequest <$> v .: "newExperience" <*> v .: "newComment"
+    withObject "DirtyFeedback" $ \v ->
+      DirtyFeedback <$> v .: "experience" <*> v .: "comment"
 
 --------------------------------------------------
-data UpdateFeedbackRequest = UpdateFeedbackRequest
-  { updatedExperience :: T.Text
-  , updatedComment :: T.Text
-  }
-
-instance FromJSON UpdateFeedbackRequest where
-  parseJSON =
-    withObject "UpdateFeedbackRequest" $ \v ->
-      UpdateFeedbackRequest <$> v .: "updatedExperience" <*> v .: "updatedComment"
-
---------------------------------------------------
-newFeedback :: NewFeedbackRequest -> IO Feedback
-newFeedback (NewFeedbackRequest newExperience newComment) = do
+newFeedback :: DirtyFeedback -> IO Feedback
+newFeedback (DirtyFeedback experience comment) = do
   newFeedbackID <- nextRandom
-  return $ Feedback newFeedbackID newExperience newComment
+  return $ Feedback newFeedbackID (DirtyFeedback experience comment)
 
-updatedFeedback :: T.Text -> UpdateFeedbackRequest -> Maybe Feedback
-updatedFeedback updatedFeedbackId (UpdateFeedbackRequest updatedExperience updatedComment) =
+updatedFeedback :: T.Text -> DirtyFeedback -> Maybe Feedback
+updatedFeedback updatedFeedbackId (DirtyFeedback experience comment) =
   case (fromString $ T.unpack updatedFeedbackId) of
     Just updatedFeedbackId ->
-      Just $ Feedback updatedFeedbackId updatedExperience updatedComment
+      Just $ Feedback updatedFeedbackId (DirtyFeedback experience comment)
     Nothing -> Nothing
