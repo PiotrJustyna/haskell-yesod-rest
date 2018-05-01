@@ -30,28 +30,46 @@ instance FromJSON Feedback where
 
 --------------------------------------------------
 data DirtyFeedback = DirtyFeedback
-  { experience :: T.Text
+  { target :: UUID
+  , targetOwner :: UUID
+  , feedbackGiver :: UUID
+  , experience :: T.Text
   , comment :: T.Text
   }
 
 instance ToJSON DirtyFeedback where
   toJSON DirtyFeedback {..} =
-    object ["experience" .= experience, "comment" .= comment]
+    object
+      [ "target" .= target
+      , "targetOwner" .= targetOwner
+      , "feedbackGiver" .= feedbackGiver
+      , "experience" .= experience
+      , "comment" .= comment
+      ]
 
 instance FromJSON DirtyFeedback where
   parseJSON =
     withObject "DirtyFeedback" $ \v ->
-      DirtyFeedback <$> v .: "experience" <*> v .: "comment"
+      DirtyFeedback <$> v .: "target" <*> v .: "targetOwner" <*>
+      v .: "feedbackGiver" <*>
+      v .: "experience" <*>
+      v .: "comment"
 
 --------------------------------------------------
 newFeedback :: DirtyFeedback -> IO Feedback
-newFeedback (DirtyFeedback experience comment) = do
+newFeedback (DirtyFeedback target targetOwner feedbackGiver experience comment) = do
   newFeedbackID <- nextRandom
-  return $ Feedback newFeedbackID (DirtyFeedback experience comment)
+  return $
+    Feedback
+      newFeedbackID
+      (DirtyFeedback target targetOwner feedbackGiver experience comment)
 
 updatedFeedback :: T.Text -> DirtyFeedback -> Maybe Feedback
-updatedFeedback updatedFeedbackId (DirtyFeedback experience comment) =
+updatedFeedback updatedFeedbackId (DirtyFeedback target targetOwner feedbackGiver experience comment) =
   case (fromString $ T.unpack updatedFeedbackId) of
     Just updatedFeedbackId ->
-      Just $ Feedback updatedFeedbackId (DirtyFeedback experience comment)
+      Just $
+      Feedback
+        updatedFeedbackId
+        (DirtyFeedback target targetOwner feedbackGiver experience comment)
     Nothing -> Nothing
